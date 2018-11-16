@@ -39,16 +39,26 @@ const install = () => {
 
 }
 
-const getDisks = () => {
-  const disks = shell.ls('/dev/');
+module.exports = getDisks = () => {
+  const disk = shell.ls('/dev/');
+  let disks = [];
 
-  for ( i = 0; i < disks.length; i++ ){
-    if ( disks[i].indexOf('sd') > -1 ){
-      const {stdout, stderr, code} = shell.exec(`smartctl --all /dev/${disks[i]}`);
-
-      console.log(stdout);
+  for ( i = 0; i < disk.length; i++ ){
+    if ( disk[i].indexOf('sd') > -1 ){
+      const status;
+      let {stdout, stderr, code} = shell.exec(`smartctl -H /dev/${disk[i]}`);
+      if (stdout.indexOf('Available') > -1){
+        if (stdout.indexOf('Enabled') > -1){
+          let {stdout, stderr, code} = shell.exec(`smartctl -H /dev/${disk[i]}`);
+          if (stdout.indexOf('PASSED') > -1 || stdout.indexOf('OK') > -1 ){
+            satus = 'OK';
+            disks.push({"Disk": `/dev/${disk[i]}`, "Status": status});
+          }
+        }
+      } 
     }
   }
+  return disks;
 }
 
 checkInstall();
