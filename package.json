@@ -1,0 +1,25 @@
+{
+  "name": "node-smartctl",
+  "version": "1.0.0",
+  "description": "A noe module to install and use smartctl",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/Jafesu/node-smartctl.git"
+  },
+  "keywords": [
+    "smartctl",
+    "SMART",
+    "SMART",
+    "Disks"
+  ],
+  "author": "Ezekiel J Hammond",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Jafesu/node-smartctl/issues"
+  },
+  "homepage": "https://github.com/Jafesu/node-smartctl#readme"
+}
