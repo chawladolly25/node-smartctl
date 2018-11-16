@@ -16,6 +16,7 @@ const checkInstall = () => {
   }else{
     if(stdout.indexOf('ii') > -1){
       console.log(`Tools Installed`);
+      getDisks();
     }
   }
 }
@@ -38,4 +39,18 @@ const install = () => {
 
 }
 
+const getDisks = () => {
+  const disks = shell.ls('/dev/');
+
+  for ( i = 0; i < disks.length; i++ ){
+    if ( disks[i].indexOf('sd') > -1 ){
+      const {stdout, stderr, code} = shell.exec(`smartctl --all /dev/${disks[i]}`);
+
+      console.log(stdout);
+    }
+  }
+}
+
 checkInstall();
+
+
