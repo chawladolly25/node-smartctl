@@ -17,7 +17,10 @@ module.exports = getDisks = () => {
       if (stdout.indexOf('Available') > -1){
         if (stdout.indexOf('Enabled') > -1){
           let {stdout, stderr, code} = shell.exec(`smartctl -H /dev/${disk[i]}`);
-          if (stdout.indexOf('PASSED') > -1 || stdout.indexOf('OK') > -1 ){
+          if (stdout.indexOf('PASSED') > -1 ) {
+            status = 'OK';
+            disks.push({"Disk": `/dev/${disk[i]}`, "Status": status});
+          }else if (stdout.indexOf('OK') > -1 ){
             status = 'OK';
             disks.push({"Disk": `/dev/${disk[i]}`, "Status": status});
           }else{

@@ -1,6 +1,6 @@
 {
   "name": "node-smartctl",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A noe module to install and use smartctl",
   "main": "app.js",
   "scripts": {
