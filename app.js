@@ -3,9 +3,11 @@ const debug = require('debug')('SmartCTL');
 const chalk = require('chalk');
 const path = require('path');
 
+let disks = [];
+
 module.exports = getDisks = () => {
   const disk = shell.ls('/dev/');
-  let disks = [];
+  disks = [];
   let status;
 
   for ( i = 0; i < disk.length; i++ ){
