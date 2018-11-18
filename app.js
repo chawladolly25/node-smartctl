@@ -16,10 +16,10 @@ module.exports = getDisks = () => {
         if (stdout.indexOf('Enabled') > -1){
           let {stdout, stderr, code} = shell.exec(`smartctl -H /dev/${disk[i]}`);
           if (stdout.indexOf('PASSED') > -1 || stdout.indexOf('OK') > -1 ){
-            satus = 'OK';
+            status = 'OK';
             disks.push({"Disk": `/dev/${disk[i]}`, "Status": status});
           }else{
-            satus = 'ERROR';
+            status = 'ERROR';
             disks.push({"Disk": `/dev/${disk[i]}`, "Status": status});
           }
         }else{
@@ -27,12 +27,14 @@ module.exports = getDisks = () => {
           if(stdout.indexOf('SMART Enabled') > -1){
             getDisks();
           }else{
-            satus = 'UNSUPPORTED';
+            console.log(stdout);
+            status = 'UNSUPPORTED';
             disks.push({"Disk": `/dev/${disk[i]}`, "Status": status});
           }
         }
       }else{
-        satus = 'UNSUPPORTED';
+        console.log(stdout);
+        status = 'UNSUPPORTED';
         disks.push({"Disk": `/dev/${disk[i]}`, "Status": status});
       } 
     }
