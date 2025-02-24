@@ -1,7 +1,7 @@
 {
   "name": "node-smartctl",
   "version": "1.0.4",
-  "description": "A noe module to install and use smartctl",
+  "description": "A node module to install and use smartctl",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -14,11 +14,11 @@
     "shelljs": "^0.8.3",
     "debug": "^4.1.0",
     "chalk": "^2.4.1",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "smartctl": "^1.0.0"  
   },
   "keywords": [
     "smartctl",
-    "SMART",
     "SMART",
     "Disks"
   ],

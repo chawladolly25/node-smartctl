@@ -2,49 +2,49 @@ const shell = require('shelljs');
 const debug = require('debug')('SmartCTL');
 const chalk = require('chalk');
 const path = require('path');
-
-
+const validator = require('validator');
 
 module.exports = getDisks = () => {
   const disk = shell.ls('/dev/');
-  disks = [];
+  const disks = [];
   let status;
   let size;
-  let free;
 
-  for ( i = 0; i < disk.length; i++ ){
-    if ( disk[i].indexOf('sd') > -1){
-      let {out} = shell.exec(`blockdev --getsize64 /dev/${disk[i]}`);
-      size = parseInt(out) / 1000000000;      
-      let {stdout, stderr, code} = shell.exec(`smartctl -H /dev/${disk[i]}`);
-      if (stdout.indexOf('Available') > -1){
-        if (stdout.indexOf('Enabled') > -1){
-          let {stdout, stderr, code} = shell.exec(`smartctl -H /dev/${disk[i]}`);
-          if (stdout.indexOf('PASSED') > -1 ) {
+  for (let i = 0; i < disk.length; i++) {
+    if (disk[i].indexOf('sd') > -1) {
+      const diskPath = `/dev/${disk[i]}`;
+      if (!validator.isAlphanumeric(disk[i])) {
+        console.log(`Invalid disk identifier: ${disk[i]}`);
+        continue;
+      }
+
+      let { stdout: sizeOut } = shell.exec(`blockdev --getsize64 ${diskPath}`);
+      size = parseInt(sizeOut) / 1000000000;
+
+      let { stdout, stderr, code } = shell.exec(`smartctl -H ${diskPath}`);
+      if (stdout.indexOf('Available') > -1) {
+        if (stdout.indexOf('Enabled') > -1) {
+          if (stdout.indexOf('PASSED') > -1 || stdout.indexOf('OK') > -1) {
             status = 'OK';
-            disks.push({"Disk": `/dev/${disk[i]}`, "Status": status, "Size":size});
-          }else if (stdout.indexOf('OK') > -1 ){
-            status = 'OK';
-            disks.push({"Disk": `/dev/${disk[i]}`, "Status": status, "Size":size});
-          }else{
+          } else {
             status = 'ERROR';
-            disks.push({"Disk": `/dev/${disk[i]}`, "Status": status, "Size":size});
           }
-        }else{
-          let {stdout, stderr, code} = shell.exec(`smartctl --smart=on /dev/${disk[i]}`);
-          if(stdout.indexOf('SMART Enabled') > -1){
+          disks.push({ "Disk": diskPath, "Status": status, "Size": size });
+        } else {
+          let { stdout: enableOut } = shell.exec(`smartctl --smart=on ${diskPath}`);
+          if (enableOut.indexOf('SMART Enabled') > -1) {
             getDisks();
-          }else{
-            console.log(stdout);
+          } else {
+            console.log(enableOut);
             status = 'UNSUPPORTED';
-            disks.push({"Disk": `/dev/${disk[i]}`, "Status": status, "Size":size});
+            disks.push({ "Disk": diskPath, "Status": status, "Size": size });
           }
         }
-      }else{
+      } else {
         console.log(stdout);
         status = 'UNSUPPORTED';
-        disks.push({"Disk": `/dev/${disk[i]}`, "Status": status, "Size":size});
-      } 
+        disks.push({ "Disk": diskPath, "Status": status, "Size": size });
+      }
     }
   }
   console.log(disks);
@@ -53,4 +53,3 @@ module.exports = getDisks = () => {
 
 getDisks();
 module.exports = disks;
-
