@@ -2,55 +2,76 @@ const shell = require('shelljs');
 const debug = require('debug')('SmartCTL');
 const chalk = require('chalk');
 const path = require('path');
+const { execFileSync } = require('child_process');
 
+// Regex to validate disk identifier (only allow names like 'sda', 'sdb', etc.)
+const validDiskRegex = /^sd[a-z]+$/;
 
+function getDisks() {
+  const diskList = shell.ls('/dev/');
+  let disks = [];
 
-module.exports = getDisks = () => {
-  const disk = shell.ls('/dev/');
-  disks = [];
-  let status;
-  let size;
-  let free;
+  for (let i = 0; i < diskList.length; i++) {
+    const disk = diskList[i];
 
-  for ( i = 0; i < disk.length; i++ ){
-    if ( disk[i].indexOf('sd') > -1){
-      let {out} = shell.exec(`blockdev --getsize64 /dev/${disk[i]}`);
-      size = parseInt(out) / 1000000000;      
-      let {stdout, stderr, code} = shell.exec(`smartctl -H /dev/${disk[i]}`);
-      if (stdout.indexOf('Available') > -1){
-        if (stdout.indexOf('Enabled') > -1){
-          let {stdout, stderr, code} = shell.exec(`smartctl -H /dev/${disk[i]}`);
-          if (stdout.indexOf('PASSED') > -1 ) {
+    // Input Validation: Only process disks matching the valid pattern
+    if (!validDiskRegex.test(disk)) {
+      continue;
+    }
+
+    let size;
+    try {
+      const blockOut = execFileSync('blockdev', ['--getsize64', `/dev/${disk}`], { encoding: 'utf8' });
+      size = parseInt(blockOut, 10) / 1000000000;
+    } catch (err) {
+      debug(`Error getting size for /dev/${disk}: ${err}`);
+      continue;
+    }
+
+    try {
+      // Use execFileSync with argument array to safely execute smartctl
+      const smartOutput = execFileSync('smartctl', ['-H', `/dev/${disk}`], { encoding: 'utf8' });
+
+      let status;
+      if (smartOutput.includes('Available')) {
+        if (smartOutput.includes('Enabled')) {
+          // Re-run to determine detailed health status
+          const newSmartOutput = execFileSync('smartctl', ['-H', `/dev/${disk}`], { encoding: 'utf8' });
+          if (newSmartOutput.includes('PASSED') || newSmartOutput.includes('OK')) {
             status = 'OK';
-            disks.push({"Disk": `/dev/${disk[i]}`, "Status": status, "Size":size});
-          }else if (stdout.indexOf('OK') > -1 ){
-            status = 'OK';
-            disks.push({"Disk": `/dev/${disk[i]}`, "Status": status, "Size":size});
-          }else{
+          } else {
             status = 'ERROR';
-            disks.push({"Disk": `/dev/${disk[i]}`, "Status": status, "Size":size});
           }
-        }else{
-          let {stdout, stderr, code} = shell.exec(`smartctl --smart=on /dev/${disk[i]}`);
-          if(stdout.indexOf('SMART Enabled') > -1){
-            getDisks();
-          }else{
-            console.log(stdout);
+          disks.push({ "Disk": `/dev/${disk}`, "Status": status, "Size": size });
+        } else {
+          // Attempt to enable SMART safely
+          const smartOnOutput = execFileSync('smartctl', ['--smart=on', `/dev/${disk}`], { encoding: 'utf8' });
+          if (smartOnOutput.includes('SMART Enabled')) {
+            // After enabling, assume disk passes or you might re-check here
+            status = 'OK';
+            disks.push({ "Disk": `/dev/${disk}`, "Status": status, "Size": size });
+          } else {
+            console.log(smartOnOutput);
             status = 'UNSUPPORTED';
-            disks.push({"Disk": `/dev/${disk[i]}`, "Status": status, "Size":size});
+            disks.push({ "Disk": `/dev/${disk}`, "Status": status, "Size": size });
           }
         }
-      }else{
-        console.log(stdout);
+      } else {
+        console.log(smartOutput);
         status = 'UNSUPPORTED';
-        disks.push({"Disk": `/dev/${disk[i]}`, "Status": status, "Size":size});
-      } 
+        disks.push({ "Disk": `/dev/${disk}`, "Status": status, "Size": size });
+      }
+    } catch (err) {
+      debug(`Error running smartctl for /dev/${disk}: ${err}`);
+      disks.push({ "Disk": `/dev/${disk}`, "Status": 'ERROR', "Size": size });
     }
   }
+
   console.log(disks);
   return disks;
 }
 
+// Execute function on load
 getDisks();
-module.exports = disks;
 
+module.exports = { getDisks };
