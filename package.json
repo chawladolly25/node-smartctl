@@ -4,17 +4,18 @@
   "description": "A noe module to install and use smartctl",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest app.test.js"
   },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/Jafesu/node-smartctl.git"
   },
   "dependencies": {
-    "shelljs": "^0.8.3",
-    "debug": "^4.1.0",
     "chalk": "^2.4.1",
-    "path": "^0.12.7"
+    "debug": "^4.1.0",
+    "path": "^0.12.7",
+    "shelljs": "^0.8.3",
+    "sinon": "^19.0.2"
   },
   "keywords": [
     "smartctl",
@@ -27,5 +28,8 @@
   "bugs": {
     "url": "https://github.com/Jafesu/node-smartctl/issues"
   },
-  "homepage": "https://github.com/Jafesu/node-smartctl#readme"
+  "homepage": "https://github.com/Jafesu/node-smartctl#readme",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
 }
