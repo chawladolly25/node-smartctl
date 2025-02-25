@@ -40,7 +40,7 @@ describe('getDisks Function Tests', function() {
       assert(!executedCommands.includes(';') && !executedCommands.includes('&&'),
              'Potential injection characters found in executed commands');
       // Also verify that the function returns an array
-      assert(Array.isArray(disks), 'Returned value should be an array');
+      assert(Array.isArray(disks), 'Returned value should be an array !');
     } catch (err) {
       assert.fail('getDisks threw an error: ' + err.message);
     }
